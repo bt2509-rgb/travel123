@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Рюкзак — інтернет-магазин спорядження для туризму</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="topbar"><div class="wrap">
+  <a href="#" id="homeLink">Статті</a>
+  <span>Тел./Viber (095)441-60-31 &nbsp; Особистий кабінет &nbsp; Кошик</span>
+</div></div>
+
+<header class="wrap head">
+  <a href="#" class="logo" id="logo">RUKZAK<span>.UA</span></a>
+  <div class="search">
+    <input id="q" placeholder="Пошук за назвою, категорією, виробником">
+    <button id="qBtn">🔍</button>
+  </div>
+  <button class="btn dark" id="addBtn">+ Додати товар</button>
+</header>
+
+<main class="wrap">
+  <h1>«Рюкзак» — інтернет-магазин спорядження для туризму та активного відпочинку</h1>
+  <p class="intro"><b>Магазин «Рюкзак»</b> спеціалізується на продажу спорядження для всіх видів туризму та активного відпочинку. Асортимент розподілено за категоріями. Користуйтеся пошуком та фільтрами — приємних покупок!</p>
+
+  <h2>Категорії</h2>
+  <div id="cats" class="grid cats"></div>
+
+  <section class="filters">
+    <h2 id="listTitle">Усі товари</h2>
+    <div class="frow">
+      <label>Ціна від <input type="number" id="pMin" min="0"></label>
+      <label>до <input type="number" id="pMax" min="0"></label>
+      <label>Призначення <select id="purpose"><option value="">Усі</option></select></label>
+      <label>Виробник <select id="maker"><option value="">Усі</option></select></label>
+      <button class="btn" id="reset">Скинути</button>
+    </div>
+    <div class="frow extremes">
+      <button class="btn dark" id="maxBtn">Найдорожчий товар</button>
+      <button class="btn dark" id="minBtn">Найдешевший товар</button>
+      <span id="extInfo"></span>
+    </div>
+  </section>
+
+  <div id="list" class="grid items"></div>
+  <p id="empty" class="empty" hidden>Нічого не знайдено.</p>
+</main>
+
+<footer><div class="wrap">© Рюкзак.UA — навчальний проєкт</div></footer>
+
+<div class="modal" id="modal" hidden>
+  <form id="form">
+    <h3 id="mTitle">Додати товар</h3>
+    <input type="hidden" id="f_id">
+    <label>Назва <input id="f_name" required></label>
+    <label>Фото (URL) <input id="f_photo" placeholder="https://..."></label>
+    <label>Опис <textarea id="f_desc" rows="3" required></textarea></label>
+    <label>Категорія <select id="f_cat" required></select></label>
+    <label>Виробник <input id="f_maker" required></label>
+    <label>Матеріал <input id="f_mat" required></label>
+    <label>Призначення <input id="f_purpose" required></label>
+    <label>Вага (кг) <input id="f_weight" type="number" step="0.01" min="0" required></label>
+    <label>Ціна (грн) <input id="f_price" type="number" min="0" required></label>
+    <div class="actions"><button type="submit" class="btn dark">Зберегти</button><button type="button" class="btn" id="cancel">Скасувати</button></div>
+  </form>
+</div>
+<script src="script.js"></script>
+</body>
+</html>
