@@ -24,6 +24,7 @@ const DEFAULTS = [
 let products = JSON.parse(localStorage.getItem("rukzak_products_v2") || "null") || DEFAULTS;
 const save = () => localStorage.setItem("rukzak_products_v2", JSON.stringify(products));
 const $ = id => document.getElementById(id);
+let cart = JSON.parse(localStorage.getItem("rukzak_cart") || "[]");
 const state = { cat: "", hl: null };
 const MIN_ITEMS = 5, MAX_ITEMS = 10;
 let uploaded = "";
@@ -32,11 +33,11 @@ const FALLBACK = "data:image/svg+xml;utf8," + encodeURIComponent('<svg xmlns="ht
 const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
 function fillSelects() {
-  const keep = $("purpose").value;
-  const purposes = [...new Set(products.map(p => p.purpose))].sort();
-  $("purpose").innerHTML = '<option value="">Усі</option>' + purposes.map(v => `<option>${esc(v)}</option>`).join("");
-  $("purpose").value = purposes.includes(keep) ? keep : "";
-  $("purposes").innerHTML = purposes.map(v => `<option value="${esc(v)}">`).join("");
+  const keep = $("maker").value;
+  const makers = [...new Set(products.map(p => p.maker))].sort();
+  $("maker").innerHTML = '<option value="">Усі</option>' + makers.map(v => `<option>${esc(v)}</option>`).join("");
+  $("maker").value = makers.includes(keep) ? keep : "";
+  $("purposes").innerHTML = [...new Set(products.map(p => p.purpose))].sort().map(v => `<option value="${esc(v)}">`).join("");
   $("f_cat").innerHTML = CATS.map(c => `<option>${c}</option>`).join("");
 }
 
@@ -56,11 +57,11 @@ function filtered() {
     (!state.cat || p.category === state.cat) &&
     (!q || (($("scope").value === "all" ? [p.name, p.category, p.maker] : [p[$("scope").value]]).some(v => v.toLowerCase().includes(q)))) &&
     (isNaN(min) || p.price >= min) && (isNaN(max) || p.price <= max) &&
-    (!$("purpose").value || p.purpose === $("purpose").value));
+    (!$("maker").value || p.maker === $("maker").value));
 }
 
 function render() {
-  renderCats();
+  renderCats(); updateCartBtn();
   const list = filtered();
   const prices = products.map(p => p.price);
   const mx = Math.max(...prices), mn = Math.min(...prices);
@@ -76,7 +77,7 @@ function render() {
         <span class="meta">Категорія: ${esc(p.category)}<br>Виробник: ${esc(p.maker)}<br>Матеріал: ${esc(p.material)}<br>Призначення: ${esc(p.purpose)}<br>Вага: ${p.weight} кг</span>
         <span class="price">${p.price.toLocaleString("uk-UA")} грн</span>
       </div>
-      <div class="ops"><button class="btn" data-edit="${p.id}">Редагувати</button><button class="btn" data-del="${p.id}">Видалити</button></div>
+      <div class="ops"><button class="btn dark" data-add="${p.id}">У кошик</button><button class="btn" data-edit="${p.id}">Редагувати</button><button class="btn" data-del="${p.id}">Видалити</button></div>
     </div>`).join("");
 }
 
@@ -84,7 +85,7 @@ function showExtreme(kind) {
   if (!products.length) return;
   const p = products.reduce((a, b) => (kind === "max" ? b.price > a.price : b.price < a.price) ? b : a);
   state.cat = ""; state.hl = p.id;
-  ["q","pMin","pMax","purpose","scope"].forEach(i => $(i).value = "");
+  ["q","pMin","pMax","maker","scope"].forEach(i => $(i).value = "");
   $("scope").value = "all";
   $("extInfo").textContent = `${kind === "max" ? "Найдорожчий" : "Найдешевший"}: ${p.name} — ${p.price} грн`;
   render();
@@ -146,19 +147,85 @@ $("cats").addEventListener("click", e => {
   render(); $("listTitle").scrollIntoView({ behavior: "smooth" });
 });
 $("list").addEventListener("click", e => {
-  const ed = e.target.dataset.edit, del = e.target.dataset.del;
+  const ed = e.target.dataset.edit, del = e.target.dataset.del, add = e.target.dataset.add;
+  if (add) addToCart(add);
   if (ed) openModal(products.find(p => p.id == ed));
   if (del) {
     const p = products.find(x => x.id == del);
     if (count(p.category) <= MIN_ITEMS) return alert(`У категорії «${p.category}» має лишитися не менше ${MIN_ITEMS} товарів. Спочатку додайте новий товар.`);
   }
-  if (del && confirm("Видалити цей товар?")) { products = products.filter(p => p.id != del); save(); fillSelects(); render(); }
+  if (del && confirm("Видалити цей товар?")) { products = products.filter(p => p.id != del); cart = cart.filter(i => i.id != del); saveCart(); save(); fillSelects(); render(); }
 });
-["q","pMin","pMax","purpose","scope"].forEach(i => $(i).addEventListener("input", () => { state.hl = null; render(); }));
+["q","pMin","pMax","maker","scope"].forEach(i => $(i).addEventListener("input", () => { state.hl = null; render(); }));
 $("qBtn").onclick = render;
 $("maxBtn").onclick = () => showExtreme("max");
 $("minBtn").onclick = () => showExtreme("min");
-$("reset").onclick = () => { ["q","pMin","pMax","purpose","scope"].forEach(i => $(i).value = ""); state.cat = ""; state.hl = null; $("extInfo").textContent = ""; render(); };
+$("reset").onclick = () => { ["q","pMin","pMax","maker","scope"].forEach(i => $(i).value = ""); state.cat = ""; state.hl = null; $("extInfo").textContent = ""; render(); };
 ["logo","homeLink"].forEach(i => $(i).onclick = e => { e.preventDefault(); $("reset").click(); });
 
 fillSelects(); render();
+
+/* ---------- Кошик ---------- */
+function saveCart() { localStorage.setItem("rukzak_cart", JSON.stringify(cart)); }
+function cartRows() { return cart.map(i => ({ p: products.find(x => x.id == i.id), qty: i.qty })).filter(r => r.p); }
+function cartSum() { return cartRows().reduce((s, r) => s + r.p.price * r.qty, 0); }
+function updateCartBtn() {
+  const n = cartRows().reduce((s, r) => s + r.qty, 0);
+  $("cartBtn").textContent = `🛒 Товарів: ${n} (${cartSum().toLocaleString("uk-UA")} грн)`;
+}
+function addToCart(id) {
+  const it = cart.find(i => i.id == id);
+  if (it) it.qty++; else cart.push({ id: +id, qty: 1 });
+  saveCart(); updateCartBtn();
+  const b = $("cartBtn"); b.classList.add("pulse"); setTimeout(() => b.classList.remove("pulse"), 400);
+}
+function renderCart() {
+  const rows = cartRows();
+  $("cartList").innerHTML = rows.length ? rows.map(r => `
+    <div class="crow">
+      <img src="${esc(r.p.photo)}" alt="" onerror="this.src='${FALLBACK}'">
+      <div class="ci"><b>${esc(r.p.name)}</b><br><span class="meta">${r.p.price.toLocaleString("uk-UA")} грн</span></div>
+      <div class="qty"><button type="button" data-dec="${r.p.id}">−</button><span>${r.qty}</span><button type="button" data-inc="${r.p.id}">+</button></div>
+      <div class="cs">${(r.p.price * r.qty).toLocaleString("uk-UA")} грн</div>
+      <button type="button" class="x" data-rm="${r.p.id}" title="Видалити">✕</button>
+    </div>`).join("") : '<p class="empty">Кошик порожній.</p>';
+  $("cartTotal").textContent = cartSum().toLocaleString("uk-UA") + " грн";
+  $("orderFields").hidden = !rows.length;
+  updateCartBtn();
+}
+function openCart() { $("orderDone").hidden = true; $("orderDone").innerHTML = ""; renderCart(); $("cartModal").hidden = false; }
+const HINTS = {
+  "Готівкою при отриманні": "Оплата готівкою кур'єру або у відділенні при отриманні.",
+  "Карткою онлайн (Visa / Mastercard)": "Після оформлення ви отримаєте посилання для оплати карткою.",
+  "Безготівковий розрахунок (за рахунком)": "Рахунок для оплати буде надіслано менеджером.",
+  "Післяплата (Нова Пошта)": "Оплата при отриманні у відділенні Нової Пошти (комісія перевізника за послугу)."
+};
+function updateHint() { $("payHint").textContent = HINTS[document.querySelector('input[name="pay"]:checked').value]; }
+
+$("cartBtn").onclick = openCart;
+$("cartLink").onclick = e => { e.preventDefault(); openCart(); };
+$("cartClose").onclick = () => $("cartModal").hidden = true;
+document.querySelectorAll('input[name="pay"]').forEach(r => r.addEventListener("change", updateHint));
+$("cartList").addEventListener("click", e => {
+  const d = e.target.dataset, id = d.inc || d.dec || d.rm; if (!id) return;
+  const it = cart.find(i => i.id == id); if (!it) return;
+  if (d.inc) it.qty++;
+  if (d.dec) it.qty = Math.max(1, it.qty - 1);
+  if (d.rm) cart = cart.filter(i => i.id != id);
+  saveCart(); renderCart();
+});
+$("orderForm").addEventListener("submit", e => {
+  e.preventDefault();
+  if (!cartRows().length) return;
+  const pay = document.querySelector('input[name="pay"]:checked').value;
+  const num = "№" + Date.now().toString().slice(-6), sum = cartSum().toLocaleString("uk-UA");
+  const name = esc($("o_name").value.trim());
+  cart = []; saveCart(); updateCartBtn();
+  $("cartList").innerHTML = ""; $("orderFields").hidden = true;
+  $("cartTotal").textContent = "0 грн";
+  $("orderDone").innerHTML = `<p class="ok">✅ Дякуємо, ${name}! Замовлення ${num} прийнято.</p><p>Сума: <b>${sum} грн</b><br>Спосіб оплати: <b>${esc(pay)}</b></p><button type="button" class="btn dark" id="doneClose">Закрити</button>`;
+  $("orderDone").hidden = false;
+  $("doneClose").onclick = () => $("cartModal").hidden = true;
+  $("orderForm").reset(); updateHint();
+});
+updateHint(); updateCartBtn();

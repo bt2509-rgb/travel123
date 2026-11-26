@@ -9,7 +9,7 @@
 <body>
 <div class="topbar"><div class="wrap">
   <a href="#" id="homeLink">Статті</a>
-  <span>Тел./Viber (095)441-60-31 &nbsp; Особистий кабінет &nbsp; Кошик</span>
+  <span>Тел./Viber (095)441-60-31 &nbsp; Особистий кабінет &nbsp; <a href="#" id="cartLink">Кошик</a></span>
 </div></div>
 
 <header class="wrap head">
@@ -19,7 +19,8 @@
     <input id="q" placeholder="Пошук товарів">
     <button id="qBtn">🔍</button>
   </div>
-  <button class="btn dark" id="addBtn">+ Додати товар</button>
+  <button class="btn" id="addBtn">+ Додати товар</button>
+  <button class="btn dark" id="cartBtn">🛒 Товарів: 0 (0 грн)</button>
 </header>
 
 <main class="wrap">
@@ -34,7 +35,7 @@
     <div class="frow">
       <label>Ціна від <input type="number" id="pMin" min="0"></label>
       <label>до <input type="number" id="pMax" min="0"></label>
-      <label>Призначення <select id="purpose"><option value="">Усі</option></select></label>
+      <label>Виробник <select id="maker"><option value="">Усі</option></select></label>
         <button class="btn" id="reset">Скинути</button>
     </div>
     <div class="frow extremes">
@@ -65,6 +66,28 @@
     <label>Вага (кг) <input id="f_weight" type="number" step="0.01" min="0" required></label>
     <label>Ціна (грн) <input id="f_price" type="number" min="0" required></label>
     <div class="actions"><button type="submit" class="btn dark">Зберегти</button><button type="button" class="btn" id="cancel">Скасувати</button></div>
+  </form>
+</div>
+
+<div class="modal" id="cartModal" hidden>
+  <form id="orderForm">
+    <h3>Кошик</h3>
+    <div id="cartList"></div>
+    <div class="total">Разом: <b id="cartTotal">0 грн</b></div>
+    <div id="orderFields">
+      <label>Ім'я <input id="o_name" required></label>
+      <label>Телефон <input id="o_phone" type="tel" required placeholder="095 000 00 00"></label>
+      <label>Адреса доставки (місто, відділення Нової Пошти) <input id="o_addr" required></label>
+      <fieldset class="pay"><legend>Спосіб оплати</legend>
+        <label><input type="radio" name="pay" value="Готівкою при отриманні" checked> Готівкою при отриманні</label>
+        <label><input type="radio" name="pay" value="Карткою онлайн (Visa / Mastercard)"> Карткою онлайн (Visa / Mastercard)</label>
+        <label><input type="radio" name="pay" value="Безготівковий розрахунок (за рахунком)"> Безготівковий розрахунок (за рахунком)</label>
+        <label><input type="radio" name="pay" value="Післяплата (Нова Пошта)"> Післяплата (Нова Пошта)</label>
+        <p id="payHint" class="meta"></p>
+      </fieldset>
+      <div class="actions"><button type="submit" class="btn dark">Оформити замовлення</button><button type="button" class="btn" id="cartClose">Закрити</button></div>
+    </div>
+    <div id="orderDone" hidden></div>
   </form>
 </div>
 <script src="script.js"></script>
