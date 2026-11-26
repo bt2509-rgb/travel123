@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Рюкзак — інтернет-магазин спорядження для туризму</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="topbar"><div class="wrap">
+  <a href="#" id="homeLink">Статті</a>
+  <span>Тел./Viber (095)441-60-31 &nbsp; Особистий кабінет &nbsp; <a href="#" id="cartLink">Кошик</a></span>
+</div></div>
+
+<header class="wrap head">
+  <a href="#" class="logo" id="logo">RUKZAK<span>.UA</span></a>
+  <div class="search">
+    <select id="scope"><option value="all">Усюди</option><option value="name">За назвою</option><option value="category">За категорією</option><option value="maker">За виробником</option></select>
+    <input id="q" placeholder="Пошук товарів">
+    <button id="qBtn">🔍</button>
+  </div>
+  <button class="btn" id="addBtn">+ Додати товар</button>
+  <button class="btn dark" id="cartBtn">🛒 Товарів: 0 (0 грн)</button>
+</header>
+
+<main class="wrap">
+  <h1>«Рюкзак» — інтернет-магазин спорядження для туризму та активного відпочинку</h1>
+  <p class="intro"><b>Магазин «Рюкзак»</b> спеціалізується на продажу спорядження для всіх видів туризму та активного відпочинку. Асортимент розподілено за категоріями. Користуйтеся пошуком та фільтрами — приємних покупок!</p>
+
+  <h2>Категорії</h2>
+  <div id="cats" class="grid cats"></div>
+
+  <section class="filters">
+    <h2 id="listTitle">Усі товари</h2>
+    <div class="frow">
+      <label>Ціна від <input type="number" id="pMin" min="0"></label>
+      <label>до <input type="number" id="pMax" min="0"></label>
+      <label>Виробник <select id="maker"><option value="">Усі</option></select></label>
+        <button class="btn" id="reset">Скинути</button>
+    </div>
+    <div class="frow extremes">
+      <button class="btn dark" id="maxBtn">Найдорожчий товар</button>
+      <button class="btn dark" id="minBtn">Найдешевший товар</button>
+      <span id="extInfo"></span>
+    </div>
+  </section>
+
+  <div id="list" class="grid items"></div>
+  <p id="empty" class="empty" hidden>Нічого не знайдено.</p>
+</main>
+
+<footer><div class="wrap">© Рюкзак.UA — навчальний проєкт</div></footer>
+
+<div class="modal" id="modal" hidden>
+  <form id="form">
+    <h3 id="mTitle">Додати товар</h3>
+    <input type="hidden" id="f_id">
+    <label>Назва <input id="f_name" required></label>
+    <label>Фото (шлях або URL) <input id="f_photo" placeholder="images/назва.jpg або https://..."></label>
+    <label>або завантажити файл <input id="f_file" type="file" accept="image/*"></label>
+    <label>Опис <textarea id="f_desc" rows="3" required></textarea></label>
+    <label>Категорія <select id="f_cat" required></select></label>
+    <label>Виробник <input id="f_maker" required></label>
+    <label>Матеріал <input id="f_mat" required></label>
+    <label>Призначення <input id="f_purpose" list="purposes" required></label><datalist id="purposes"></datalist>
+    <label>Вага (кг) <input id="f_weight" type="number" step="0.01" min="0" required></label>
+    <label>Ціна (грн) <input id="f_price" type="number" min="0" required></label>
+    <div class="actions"><button type="submit" class="btn dark">Зберегти</button><button type="button" class="btn" id="cancel">Скасувати</button></div>
+  </form>
+</div>
+
+<div class="modal" id="cartModal" hidden>
+  <form id="orderForm">
+    <h3>Кошик</h3>
+    <div id="cartList"></div>
+    <div class="total">Разом: <b id="cartTotal">0 грн</b></div>
+    <div id="orderFields">
+      <label>Ім'я <input id="o_name" required></label>
+      <label>Телефон <input id="o_phone" type="tel" required placeholder="095 000 00 00"></label>
+      <label>Адреса доставки (місто, відділення Нової Пошти) <input id="o_addr" required></label>
+      <fieldset class="pay"><legend>Спосіб оплати</legend>
+        <label><input type="radio" name="pay" value="Готівкою при отриманні" checked> Готівкою при отриманні</label>
+        <label><input type="radio" name="pay" value="Карткою онлайн (Visa / Mastercard)"> Карткою онлайн (Visa / Mastercard)</label>
+        <label><input type="radio" name="pay" value="Безготівковий розрахунок (за рахунком)"> Безготівковий розрахунок (за рахунком)</label>
+        <label><input type="radio" name="pay" value="Післяплата (Нова Пошта)"> Післяплата (Нова Пошта)</label>
+        <p id="payHint" class="meta"></p>
+      </fieldset>
+      <div class="actions"><button type="submit" class="btn dark">Оформити замовлення</button><button type="button" class="btn" id="cartClose">Закрити</button></div>
+    </div>
+    <div id="orderDone" hidden></div>
+  </form>
+</div>
+<script src="script.js"></script>
+</body>
+</html>
