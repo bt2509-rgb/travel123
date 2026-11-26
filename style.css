@@ -45,3 +45,6 @@ footer{margin-top:40px;background:#eee;padding:18px 0;color:#888;text-align:cent
 .modal input,.modal textarea,.modal select{width:100%;padding:7px;border:1px solid #ccc;border-radius:3px;font:inherit}
 .actions{display:flex;gap:10px;margin-top:10px}
 @media(max-width:700px){.head{flex-wrap:wrap}.topbar span{display:none}h1{font-size:22px}}
+
+.search select{padding:0 8px;border:1px solid #ccc;border-right:0;border-radius:4px 0 0 4px;background:#f3f3f3;font-size:13px}
+.search input{border-radius:0}
